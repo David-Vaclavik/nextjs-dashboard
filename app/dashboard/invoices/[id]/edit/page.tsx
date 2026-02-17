@@ -1,6 +1,7 @@
 import Form from "@/app/ui/invoices/edit-form";
 import Breadcrumbs from "@/app/ui/invoices/breadcrumbs";
 import { fetchCustomers, fetchInvoiceById } from "@/app/lib/data";
+import { notFound } from "next/navigation";
 
 //* Chapter 11: Mutating Data
 // params is a special prop that contains the dynamic segments of the URL.
@@ -9,6 +10,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
   const [invoice, customers] = await Promise.all([fetchInvoiceById(id), fetchCustomers()]);
+
+  //* added in Chapter 12: Error Handling
+  if (!invoice) {
+    notFound();
+  }
 
   return (
     <main>
