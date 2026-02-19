@@ -6,6 +6,11 @@ import { lusitana } from "@/app/ui/fonts";
 import { InvoicesTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
 import { fetchInvoicesPages } from "@/app/lib/data";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Invoices",
+};
 
 //* Chapter 10: Adding Search and Pagination
 // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination#starting-code
