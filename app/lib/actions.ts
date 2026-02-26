@@ -124,6 +124,8 @@ export async function deleteInvoice(id: string) {
 export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
     await signIn("credentials", formData);
+    // formData contains: email, password, redirectTo from login-form.tsx
+    // NextAuth will read the redirectTo field and handle it automatically
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -135,4 +137,96 @@ export async function authenticate(prevState: string | undefined, formData: Form
     }
     throw error;
   }
+}
+
+//! My own addition: User Registration
+import bcrypt from "bcrypt";
+
+const RegisterSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+    email: z.string().email({ message: "Please enter a valid email." }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+export type RegisterState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+    confirmPassword?: string[];
+  };
+  message?: string | null;
+  values?: {
+    name?: string;
+    email?: string;
+  };
+};
+
+export async function registerUser(prevState: RegisterState, formData: FormData) {
+  const rawData = {
+    name: formData.get("name") as string,
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+    confirmPassword: formData.get("confirmPassword") as string,
+  };
+
+  // 1. Validate form data using Zod
+  const validatedFields = RegisterSchema.safeParse(rawData);
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing or invalid fields. Failed to register.",
+      values: {
+        name: rawData.name,
+        email: rawData.email,
+      },
+    };
+  }
+
+  const { name, email, password } = validatedFields.data;
+
+  try {
+    // 2. Check if user already exists
+    const existingUser = await sql`
+      SELECT * FROM users WHERE email=${email}
+    `;
+
+    if (existingUser.length > 0) {
+      return {
+        message: "User with this email already exists.",
+        values: {
+          name,
+          email,
+        },
+      };
+    }
+
+    // 3. Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4. Insert new user into database
+    await sql`
+      INSERT INTO users (name, email, password)
+      VALUES (${name}, ${email}, ${hashedPassword})
+    `;
+  } catch (error) {
+    console.error("Registration error:", error);
+    return {
+      message: "Database Error: Failed to register user.",
+      values: {
+        name,
+        email,
+      },
+    };
+  }
+
+  // 5. Redirect to login page
+  redirect("/login");
 }

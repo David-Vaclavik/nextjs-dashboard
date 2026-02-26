@@ -1,14 +1,13 @@
-import AcmeLogo from "@/app/ui/acme-logo";
-import LoginForm from "@/app/ui/login-form";
-import { Suspense } from "react";
+import RegisterForm from "@/app/ui/register-form";
 import { Metadata } from "next";
 import Link from "next/dist/client/link";
+import AcmeLogo from "../ui/acme-logo";
 
 export const metadata: Metadata = {
-  title: "Login",
+  title: "Register",
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="flex items-center justify-center md:h-screen">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
@@ -17,16 +16,15 @@ export default function LoginPage() {
             <AcmeLogo />
           </div>
         </div>
-        <Suspense>
-          <LoginForm />
-        </Suspense>
 
-        <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-500 hover:underline active:text-blue-700">
-            Register
+        <RegisterForm />
+
+        {/* <div className="mt-4 text-center text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500 hover:underline">
+            Login
           </Link>
-        </div>
+        </div> */}
       </div>
     </main>
   );

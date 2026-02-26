@@ -19,8 +19,9 @@ async function getUser(email: string): Promise<User | undefined> {
 }
 
 export const { auth, signIn, signOut } = NextAuth({
-  ...authConfig,
+  ...authConfig, // ← Spread the lightweight config
   providers: [
+    // Add heavy login logic here, but keep it out of the main config file
     Credentials({
       async authorize(credentials) {
         // Validate the credentials using Zod
